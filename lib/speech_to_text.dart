@@ -417,21 +417,22 @@ class SpeechToText {
   ///
   /// [listenOptions] used to specify the options to use for the listen
   /// session. See [SpeechListenOptions] for details.
-  Future listen(
-      {SpeechResultListener? onResult,
-      Duration? listenFor,
-      Duration? pauseFor,
-      String? localeId,
-      SpeechSoundLevelChange? onSoundLevelChange,
-      @Deprecated('Use SpeechListenOptions.cancelOnError instead')
-      cancelOnError = false,
-      @Deprecated('Use SpeechListenOptions.partialResults instead')
-      partialResults = true,
-      @Deprecated('Use SpeechListenOptions.onDevice instead') onDevice = false,
-      @Deprecated('Use SpeechListenOptions.listenMode instead')
-      ListenMode listenMode = ListenMode.confirmation,
-      @Deprecated('Use SpeechListenOptions.sampleRate instead') sampleRate = 0,
-      SpeechListenOptions? listenOptions}) async {
+  Future listen({
+    SpeechResultListener? onResult,
+    Duration? listenFor,
+    Duration? pauseFor,
+    String? localeId,
+    SpeechSoundLevelChange? onSoundLevelChange,
+    @Deprecated('Use SpeechListenOptions.cancelOnError instead')
+    cancelOnError = false,
+    @Deprecated('Use SpeechListenOptions.partialResults instead')
+    partialResults = true,
+    @Deprecated('Use SpeechListenOptions.onDevice instead') onDevice = false,
+    @Deprecated('Use SpeechListenOptions.listenMode instead')
+    ListenMode listenMode = ListenMode.confirmation,
+    @Deprecated('Use SpeechListenOptions.sampleRate instead') sampleRate = 0,
+    SpeechListenOptions? listenOptions,
+  }) async {
     if (!_initWorked) {
       throw SpeechToTextNotInitializedException();
     }

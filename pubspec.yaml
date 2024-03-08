@@ -10,14 +10,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  speech_to_text_platform_interface: ^2.2.0
-  speech_to_text_macos: ^1.1.0
-  json_annotation: ^4.8.1
   clock: ^1.1.1
   pedantic: ^1.11.1
-  flutter_web_plugins:
-    sdk: flutter
-  meta: ^1.11.0
+  json_annotation: ^4.8.1
+  speech_to_text_platform_interface: ^2.2.0
 
 dev_dependencies:
   flutter_test:
