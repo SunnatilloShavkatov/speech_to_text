@@ -55,7 +55,8 @@ typedef SpeechResultListener = void Function(SpeechRecognitionResult result);
 ///
 /// See the [onError] argument on the [SpeechToText.initialize] method for use.
 typedef SpeechErrorListener = void Function(
-    SpeechRecognitionError errorNotification);
+  SpeechRecognitionError errorNotification,
+);
 
 /// Notified when recognition status changes.
 ///
