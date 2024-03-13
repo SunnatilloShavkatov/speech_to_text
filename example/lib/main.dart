@@ -124,12 +124,13 @@ class _SpeechSampleAppState extends State<SpeechSampleApp> {
     final pauseFor = int.tryParse(_pauseForController.text);
     final listenFor = int.tryParse(_listenForController.text);
     final options = SpeechListenOptions(
-        onDevice: _onDevice,
-        listenMode: ListenMode.confirmation,
-        cancelOnError: true,
-        partialResults: true,
-        autoPunctuation: true,
-        enableHapticFeedback: true);
+      onDevice: _onDevice,
+      listenMode: ListenMode.confirmation,
+      cancelOnError: true,
+      partialResults: true,
+      autoPunctuation: true,
+      enableHapticFeedback: true,
+    );
     // Note that `listenFor` is the maximum, not the minimum, on some
     // systems recognition will be stopped before this value is reached.
     // Similarly `pauseFor` is a maximum not a minimum and may be ignored
