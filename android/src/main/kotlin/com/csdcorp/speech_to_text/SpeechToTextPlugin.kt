@@ -720,7 +720,7 @@ class SpeechToTextPlugin :
                 speechRecognizer?.destroy()
                 speechRecognizer = null
             }
-        }, 50)
+        }, 500)
     }
 
     override fun onRequestPermissionsResult(
