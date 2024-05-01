@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.csdcorp.speech_to_text
 
 import android.Manifest
@@ -79,9 +81,8 @@ class SpeechToTextPlugin :
     ActivityAware {
     private var pluginContext: Context? = null
     private var channel: MethodChannel? = null
-    private val minSdkForSpeechSupport = 21
+    private val minSdkForSpeechSupport = 24
     private val brokenStopSdk = 29
-    private val minSdkForOnDeviceSpeechSupport = 31
     private val speechToTextPermissionCode = 28521
     private val missingConfidence: Double = -1.0
     private var speechThresholdRms = 9
@@ -394,7 +395,7 @@ class SpeechToTextPlugin :
                         }
 
                         override fun onError(error: Int) {
-                            debugLog("error from checkRecognitionSupport: " + error)
+                            debugLog("error from checkRecognitionSupport: $error")
                             recognizer.destroy()
                         }
                     })
@@ -457,7 +458,7 @@ class SpeechToTextPlugin :
             speechResult.put("finalResult", isFinal)
             val confidence = speechBundle.getFloatArray(SpeechRecognizer.CONFIDENCE_SCORES)
             val alternates = JSONArray()
-            for (resultIndex in 0..userSaid.size - 1) {
+            for (resultIndex in 0..<userSaid.size) {
                 val speechWords = JSONObject()
                 speechWords.put("recognizedWords", userSaid[resultIndex])
                 if (null != confidence && confidence.size >= userSaid.size) {
@@ -872,10 +873,9 @@ class LanguageDetailsChecker(flutterResult: Result, logging: Boolean) : Broadcas
     }
 }
 
-private class ChannelResultWrapper(result: Result) : Result {
+private class ChannelResultWrapper(val result: Result) : Result {
     // Caller handler
     val handler: Handler = Handler(Looper.getMainLooper())
-    val result: Result = result
 
     // make sure to respond in the caller thread
     override fun success(results: Any?) {
