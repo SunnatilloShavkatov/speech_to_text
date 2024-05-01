@@ -34,9 +34,14 @@ enum SpeechRecognitionEventType {
 /// Use [eventType] to determine what type of event it is and depending on that
 /// use the other properties to get information about it.
 class SpeechRecognitionEvent {
-
   SpeechRecognitionEvent(
-      this.eventType, this._result, this._error, this._listening, this._level,);
+    this.eventType,
+    this._result,
+    this._error,
+    this._listening,
+    this._level,
+  );
+
   final SpeechRecognitionEventType eventType;
   final SpeechRecognitionError? _error;
   final SpeechRecognitionResult? _result;

@@ -1,8 +1,5 @@
 // ignore_for_file: avoid_bool_literals_in_conditional_expressions
 import "package:flutter/foundation.dart";
-import "package:json_annotation/json_annotation.dart";
-
-part "speech_recognition_result.g.dart";
 
 /// A sequence of recognized words from the speech recognition
 /// service.
@@ -11,13 +8,19 @@ part "speech_recognition_result.g.dart";
 /// at once at the end or as partial results as each word is
 /// recognized. Use the [finalResult] flag to determine if the
 /// result is considered final by the platform.
-@JsonSerializable(explicitToJson: true)
 @immutable
 class SpeechRecognitionResult {
   const SpeechRecognitionResult(this.alternates, this.finalResult);
 
   factory SpeechRecognitionResult.fromJson(Map<String, dynamic> json) =>
-      _$SpeechRecognitionResultFromJson(json);
+      SpeechRecognitionResult(
+        (json["alternates"] as List<dynamic>)
+            .map(
+              (e) => SpeechRecognitionWords.fromJson(e as Map<String, dynamic>),
+            )
+            .toList(),
+        json["finalResult"] as bool,
+      );
   final List<SpeechRecognitionWords> alternates;
 
   /// Returns a list of possible transcriptions of the speech.
@@ -81,7 +84,10 @@ class SpeechRecognitionResult {
   @override
   int get hashCode => recognizedWords.hashCode;
 
-  Map<String, dynamic> toJson() => _$SpeechRecognitionResultToJson(this);
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        "alternates": alternates.map((e) => e.toJson()).toList(),
+        "finalResult": finalResult,
+      };
 
   SpeechRecognitionResult toFinal() =>
       SpeechRecognitionResult(alternates, true);
@@ -91,13 +97,15 @@ class SpeechRecognitionResult {
 ///
 /// Each result will have one or more [SpeechRecognitionWords]
 /// with a varying degree of confidence about each set of words.
-@JsonSerializable()
 @immutable
 class SpeechRecognitionWords {
   const SpeechRecognitionWords(this.recognizedWords, this.confidence);
 
   factory SpeechRecognitionWords.fromJson(Map<String, dynamic> json) =>
-      _$SpeechRecognitionWordsFromJson(json);
+      SpeechRecognitionWords(
+        json["recognizedWords"],
+        (json["confidence"] as num).toDouble(),
+      );
 
   /// The sequence of words recognized
   final String recognizedWords;
@@ -139,5 +147,8 @@ class SpeechRecognitionWords {
   @override
   int get hashCode => recognizedWords.hashCode;
 
-  Map<String, dynamic> toJson() => _$SpeechRecognitionWordsToJson(this);
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        "recognizedWords": recognizedWords,
+        "confidence": confidence,
+      };
 }

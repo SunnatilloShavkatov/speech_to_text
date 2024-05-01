@@ -1,7 +1,4 @@
 import "package:flutter/foundation.dart";
-import "package:json_annotation/json_annotation.dart";
-
-part "speech_recognition_error.g.dart";
 
 /// A single error returned from the underlying speech services.
 ///
@@ -10,14 +7,16 @@ part "speech_recognition_error.g.dart";
 /// addressed before recognition will work. Transient errors
 /// cause individual recognition sessions to fail but subsequent
 /// attempts may well succeed.
-@JsonSerializable()
 @immutable
 class SpeechRecognitionError {
-
   const SpeechRecognitionError(this.errorMsg, this.permanent);
 
   factory SpeechRecognitionError.fromJson(Map<String, dynamic> json) =>
-      _$SpeechRecognitionErrorFromJson(json);
+      SpeechRecognitionError(
+        json["errorMsg"],
+        json["permanent"],
+      );
+
   /// Use this to differentiate the various error conditions.
   ///
   /// Not meant for display to the user.
@@ -26,16 +25,22 @@ class SpeechRecognitionError {
   /// True means that recognition cannot continue until
   /// the error is resolved.
   final bool permanent;
-  Map<String, dynamic> toJson() => _$SpeechRecognitionErrorToJson(this);
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        "errorMsg": errorMsg,
+        "permanent": permanent,
+      };
 
   @override
-  String toString() => "SpeechRecognitionError msg: $errorMsg, permanent: $permanent";
+  String toString() =>
+      "SpeechRecognitionError msg: $errorMsg, permanent: $permanent";
 
   @override
-  bool operator ==(Object other) => identical(this, other) ||
-        other is SpeechRecognitionError &&
-            errorMsg == other.errorMsg &&
-            permanent == other.permanent;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpeechRecognitionError &&
+          errorMsg == other.errorMsg &&
+          permanent == other.permanent;
 
   @override
   int get hashCode => errorMsg.hashCode;
