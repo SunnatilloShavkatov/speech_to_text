@@ -1,24 +1,25 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
+// ignore_for_file: parameter_assignments,prefer_final_fields, discarded_futures, avoid_annotating_with_dynamic
+import "dart:async";
+import "dart:convert";
+import "dart:math";
 
-import 'package:clock/clock.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
-import 'package:speech_to_text/speech_recognition_error.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text_platform_interface/speech_to_text_platform_interface.dart';
-export 'package:speech_to_text_platform_interface/speech_to_text_platform_interface.dart'
+import "package:clock/clock.dart";
+import "package:flutter/foundation.dart";
+import "package:flutter/services.dart";
+import "package:speech_to_text/speech_recognition_error.dart";
+import "package:speech_to_text/speech_recognition_result.dart";
+import "package:speech_to_text_platform_interface/speech_to_text_platform_interface.dart";
+export "package:speech_to_text_platform_interface/speech_to_text_platform_interface.dart"
     show ListenMode, SpeechConfigOption, SpeechListenOptions;
 
 /// A single locale with a [name], localized to the current system locale,
 /// and a [localeId] which can be used in the [SpeechToText.listen] method to choose a
 /// locale for speech recognition.
 class LocaleName {
+  LocaleName(this.localeId, this.name);
+
   final String localeId;
   final String name;
-
-  LocaleName(this.localeId, this.name);
 }
 
 /// Notified as words are recognized with the current set of recognized words.
@@ -68,7 +69,7 @@ typedef SpeechStatusListener = void Function(String status);
 /// [level] is a measure of the decibels of the current sound on
 /// the recognition input. See the [onSoundLevelChange] argument on
 /// the [SpeechToText.listen] method for use.
-typedef SpeechSoundLevelChange = Function(double level);
+typedef SpeechSoundLevelChange = void Function(double level);
 
 /// An interface to device specific speech recognition services.
 ///
@@ -84,52 +85,57 @@ typedef SpeechSoundLevelChange = Function(double level);
 /// speech.stop();
 /// ```
 class SpeechToText {
-  static const String listenMethod = 'listen';
-  static const String textRecognitionMethod = 'textRecognition';
-  static const String notifyErrorMethod = 'notifyError';
-  static const String notifyStatusMethod = 'notifyStatus';
-  static const String soundLevelChangeMethod = 'soundLevelChange';
-  static const String listeningStatus = 'listening';
-  static const String notListeningStatus = 'notListening';
-  static const String doneStatus = 'done';
+  factory SpeechToText() => _instance;
+
+  @visibleForTesting
+  SpeechToText.withMethodChannel();
+
+  static const String listenMethod = "listen";
+  static const String textRecognitionMethod = "textRecognition";
+  static const String notifyErrorMethod = "notifyError";
+  static const String notifyStatusMethod = "notifyStatus";
+  static const String soundLevelChangeMethod = "soundLevelChange";
+  static const String listeningStatus = "listening";
+  static const String notListeningStatus = "notListening";
+  static const String doneStatus = "done";
 
   /// This one is kind of a faux status, it's used internally
   /// to tell the status notifier that the final result has been seen
   /// since the status notifier wants to tell the world that it is 'done'
   /// only when both the final result and the done from the underlying platform
   /// has been seen.
-  static const String _finalStatus = 'final';
+  static const String _finalStatus = "final";
 
   /// Sent when speech recognition completes with no results having been seen
   /// This allows the done status to be sent from the plugin to clients
   /// even without a final speech result.
-  static const String _doneNoResultStatus = 'doneNoResult';
-  static const defaultFinalTimeout = Duration(milliseconds: 2000);
-  static const _minFinalTimeout = Duration(milliseconds: 50);
+  static const String _doneNoResultStatus = "doneNoResult";
+  static const Duration defaultFinalTimeout = Duration(milliseconds: 2000);
+  static const Duration _minFinalTimeout = Duration(milliseconds: 50);
 
   /// on Android SDK 29 the recognizer stop method did not work properly so the
   /// plugin destroys the recognizer instead. If this causes problems
   /// this option overrides that behaviour and forces the plugin to use
   /// the stop command instead, even on SDK 29.
   static final SpeechConfigOption androidAlwaysUseStop =
-      SpeechConfigOption('android', 'alwaysUseStop', true);
+      SpeechConfigOption("android", "alwaysUseStop", true);
 
   /// Some Android builds do not properly define the default speech
   /// recognition intent. This option forces a workaround to lookup the
   /// intent by querying the intent manager.
   static final SpeechConfigOption androidIntentLookup =
-      SpeechConfigOption('android', 'intentLookup', true);
+      SpeechConfigOption("android", "intentLookup", true);
 
   /// If your application does not need Bluetooth support on Android and
   /// you'd rather not have to ask for Bluetooth permission pass this option
   /// to disable Bluetooth support on Android.
   static final SpeechConfigOption androidNoBluetooth =
-      SpeechConfigOption('android', 'noBluetooth', true);
+      SpeechConfigOption("android", "noBluetooth", true);
 
   /// This option does nothing yet, may disable Bluetooth on iOS if there is
   /// a need.
   static final SpeechConfigOption iosNoBluetooth =
-      SpeechConfigOption('ios', 'noBluetooth', true);
+      SpeechConfigOption("ios", "noBluetooth", true);
 
   /// On some mobile web browsers, notably Chrome on Android, the speech
   /// results behave differently. The default behaviour is to aggregate
@@ -139,7 +145,7 @@ class SpeechToText {
   /// result. You will need to test the user agent of the browser to
   /// decide whether to use this option.
   static final SpeechConfigOption webDoNotAggregate =
-      SpeechConfigOption('web', 'aggregate', false);
+      SpeechConfigOption("web", "aggregate", false);
 
   static final SpeechToText _instance = SpeechToText.withMethodChannel();
   bool _initWorked = false;
@@ -175,8 +181,8 @@ class SpeechToText {
   /// True if not listening or the user called cancel / stop, false
   /// if cancel/stop were invoked by timeout or error condition.
   bool _userEnded = false;
-  String _lastRecognized = '';
-  String _lastStatus = '';
+  String _lastRecognized = "";
+  String _lastStatus = "";
   double _lastSoundLevel = 0;
   Timer? _listenTimer;
   Timer? _notifyFinalTimer;
@@ -187,11 +193,6 @@ class SpeechToText {
   SpeechErrorListener? errorListener;
   SpeechStatusListener? statusListener;
   SpeechSoundLevelChange? _soundLevelChange;
-
-  factory SpeechToText() => _instance;
-
-  @visibleForTesting
-  SpeechToText.withMethodChannel();
 
   /// True if words have been recognized during the current [listen] call.
   ///
@@ -242,7 +243,8 @@ class SpeechToText {
   /// Note that applications cannot ask for permission again if the user has
   /// denied them permission in the past.
   Future<bool> get hasPermission async {
-    var hasPermission = await SpeechToTextPlatform.instance.hasPermission();
+    final bool hasPermission =
+        await SpeechToTextPlatform.instance.hasPermission();
     return hasPermission;
   }
 
@@ -281,14 +283,15 @@ class SpeechToText {
   ///
   /// [options] pass platform specific configuration options to the
   /// platform specific implementation.
-  Future<bool> initialize(
-      {SpeechErrorListener? onError,
-      SpeechStatusListener? onStatus,
-      debugLogging = false,
-      Duration finalTimeout = defaultFinalTimeout,
-      List<SpeechConfigOption>? options}) async {
+  Future<bool> initialize({
+    SpeechErrorListener? onError,
+    SpeechStatusListener? onStatus,
+    bool debugLogging = false,
+    Duration finalTimeout = defaultFinalTimeout,
+    List<SpeechConfigOption>? options,
+  }) async {
     if (_initWorked) {
-      return Future.value(_initWorked);
+      return Future<bool>.value(_initWorked);
     }
     _finalTimeout = finalTimeout;
     if (finalTimeout <= _minFinalTimeout) {}
@@ -298,9 +301,10 @@ class SpeechToText {
     SpeechToTextPlatform.instance.onError = _onNotifyError;
     SpeechToTextPlatform.instance.onStatus = _onNotifyStatus;
     SpeechToTextPlatform.instance.onSoundLevel = _onSoundLevelChange;
-    _initWorked = await SpeechToTextPlatform.instance
-        .initialize(debugLogging: debugLogging, options: options);
-    return _initWorked;
+    return SpeechToTextPlatform.instance.initialize(
+      debugLogging: debugLogging,
+      options: options,
+    );
   }
 
   /// Stops the current listen for speech if active, does nothing if not.
@@ -418,46 +422,34 @@ class SpeechToText {
   ///
   /// [listenOptions] used to specify the options to use for the listen
   /// session. See [SpeechListenOptions] for details.
-  Future listen({
+  Future<void> listen({
     SpeechResultListener? onResult,
     Duration? listenFor,
     Duration? pauseFor,
     String? localeId,
     SpeechSoundLevelChange? onSoundLevelChange,
-    @Deprecated('Use SpeechListenOptions.cancelOnError instead')
-    cancelOnError = false,
-    @Deprecated('Use SpeechListenOptions.partialResults instead')
-    partialResults = true,
-    @Deprecated('Use SpeechListenOptions.onDevice instead') onDevice = false,
-    @Deprecated('Use SpeechListenOptions.listenMode instead')
     ListenMode listenMode = ListenMode.confirmation,
-    @Deprecated('Use SpeechListenOptions.sampleRate instead') sampleRate = 0,
     SpeechListenOptions? listenOptions,
   }) async {
     if (!_initWorked) {
       throw SpeechToTextNotInitializedException();
     }
     _lastError = null;
-    _lastRecognized = '';
+    _lastRecognized = "";
     _userEnded = false;
     _lastSpeechResult = null;
-    _cancelOnError = cancelOnError;
     _recognized = false;
     _notifiedFinal = false;
     _notifiedDone = false;
     _resultListener = onResult;
     _soundLevelChange = onSoundLevelChange;
-    _partialResults = partialResults;
     _notifyFinalTimer?.cancel();
     _notifyFinalTimer = null;
     try {
-      var started = await SpeechToTextPlatform.instance.listen(
-          partialResults: partialResults || null != pauseFor,
-          onDevice: onDevice,
-          listenMode: listenMode.index,
-          sampleRate: sampleRate,
-          localeId: localeId,
-          options: listenOptions);
+      final bool started = await SpeechToTextPlatform.instance.listen(
+        localeId: localeId,
+        options: listenOptions,
+      );
       if (started) {
         _listenStartedAt = clock.now().millisecondsSinceEpoch;
         _lastSpeechEventAt = _listenStartedAt;
@@ -488,22 +480,25 @@ class SpeechToText {
   }
 
   void _setupListenAndPause(
-      Duration? initialPauseFor, Duration? initialListenFor,
-      {bool ignoreElapsedPause = false}) {
+    Duration? initialPauseFor,
+    Duration? initialListenFor, {
+    bool ignoreElapsedPause = false,
+  }) {
     _pauseFor = null;
     _listenFor = null;
     if (null == initialPauseFor && null == initialListenFor) {
       return;
     }
-    var pauseFor = initialPauseFor;
-    var listenFor = initialListenFor;
+    Duration? pauseFor = initialPauseFor;
+    Duration? listenFor = initialListenFor;
     if (null != pauseFor) {
-      var remainingMillis = pauseFor.inMilliseconds -
+      final int remainingMillis = pauseFor.inMilliseconds -
           (ignoreElapsedPause ? 0 : _elapsedSinceSpeechEvent);
       pauseFor = Duration(milliseconds: max(remainingMillis, 0));
     }
     if (null != listenFor) {
-      var remainingMillis = listenFor.inMilliseconds - _elapsedListenMillis;
+      final int remainingMillis =
+          listenFor.inMilliseconds - _elapsedListenMillis;
       listenFor = Duration(milliseconds: max(remainingMillis, 0));
     }
     Duration minDuration;
@@ -516,8 +511,10 @@ class SpeechToText {
     } else {
       _listenFor = Duration(milliseconds: listenFor.inMilliseconds);
       _pauseFor = Duration(milliseconds: pauseFor.inMilliseconds);
-      var minMillis = min(listenFor.inMilliseconds - _elapsedListenMillis,
-          pauseFor.inMilliseconds);
+      final int minMillis = min(
+        listenFor.inMilliseconds - _elapsedListenMillis,
+        pauseFor.inMilliseconds,
+      );
       minDuration = Duration(milliseconds: minMillis);
     }
     // print('Waiting for ${minDuration.inMilliseconds}');
@@ -536,8 +533,8 @@ class SpeechToText {
 
   void _stopOnPauseOrListen() {
     // print('Stop? $_elapsedListenMillis / $_elapsedSinceSpeechEvent');
-    var listenFor = _listenFor;
-    var pauseFor = _pauseFor;
+    final Duration? listenFor = _listenFor;
+    final Duration? pauseFor = _pauseFor;
     if (null != listenFor && _elapsedListenMillis >= listenFor.inMilliseconds) {
       _stop();
     } else if (null != pauseFor &&
@@ -570,16 +567,16 @@ class SpeechToText {
   /// languages available for online recognition. Unfortunately there is no
   /// way to get the list of languages supported by the online recognizer.
   Future<List<LocaleName>> locales() async {
-    final locales = await SpeechToTextPlatform.instance.locales();
-    var filteredLocales = locales
-        .map((locale) {
-          var components = locale.split(':');
+    final List<dynamic> locales = await SpeechToTextPlatform.instance.locales();
+    final List<LocaleName> filteredLocales = locales
+        .map((dynamic locale) {
+          final List<String> components = locale.toString().split(":");
           if (components.length != 2) {
             return null;
           }
           return LocaleName(components[0], components[1]);
         })
-        .where((item) => item != null)
+        .where((LocaleName? item) => item != null)
         .toList()
         .cast<LocaleName>();
     if (filteredLocales.isNotEmpty) {
@@ -587,7 +584,8 @@ class SpeechToText {
     } else {
       _systemLocale = null;
     }
-    filteredLocales.sort((ln1, ln2) => ln1.name.compareTo(ln2.name));
+    filteredLocales
+        .sort((LocaleName ln1, LocaleName ln2) => ln1.name.compareTo(ln2.name));
     return filteredLocales;
   }
 
@@ -597,27 +595,32 @@ class SpeechToText {
     if (null == _systemLocale) {
       await locales();
     }
-    return Future.value(_systemLocale);
+    return Future<LocaleName?>.value(_systemLocale);
   }
 
   void _onTextRecognition(String resultJson) {
     // print('onTextRecognition');
-    Map<String, dynamic> resultMap = jsonDecode(resultJson);
-    var speechResult = SpeechRecognitionResult.fromJson(resultMap);
+    final Map<String, dynamic> resultMap = jsonDecode(resultJson);
+    final SpeechRecognitionResult speechResult =
+        SpeechRecognitionResult.fromJson(resultMap);
     _notifyResults(speechResult);
   }
 
   void _onFinalTimeout() {
     // print('onFinalTimeout $_finalTimeout');
-    if (_notifiedFinal) return;
+    if (_notifiedFinal) {
+      return;
+    }
     if (_lastSpeechResult != null && null != _resultListener) {
-      var finalResult = _lastSpeechResult!.toFinal();
+      final SpeechRecognitionResult finalResult = _lastSpeechResult!.toFinal();
       _notifyResults(finalResult);
     }
   }
 
   void _notifyResults(SpeechRecognitionResult speechResult) {
-    if (_notifiedFinal) return;
+    if (_notifiedFinal) {
+      return;
+    }
     if (_lastSpeechResult == null || _lastSpeechResult != speechResult) {
       _lastSpeechEventAt = clock.now().millisecondsSinceEpoch;
     }
@@ -647,8 +650,9 @@ class SpeechToText {
     if (isNotListening && _userEnded) {
       return;
     }
-    Map<String, dynamic> errorMap = jsonDecode(errorJson);
-    var speechError = SpeechRecognitionError.fromJson(errorMap);
+    final Map<String, dynamic> errorMap = jsonDecode(errorJson);
+    final SpeechRecognitionError speechError =
+        SpeechRecognitionError.fromJson(errorMap);
     _lastError = speechError;
     if (null != errorListener) {
       errorListener!(speechError);
@@ -663,19 +667,20 @@ class SpeechToText {
     switch (status) {
       case doneStatus:
         _notifiedDone = true;
-        if (!_notifiedFinal) return;
-        break;
+        if (!_notifiedFinal) {
+          return;
+        }
       case _finalStatus:
-        if (!_notifiedDone) return;
+        if (!_notifiedDone) {
+          return;
+        }
 
         // the [_finalStatus] is just to indicate that it can send the
         // [doneStatus] if [_notifiedDone] has already happened.
         status = doneStatus;
-        break;
       case _doneNoResultStatus:
         _notifiedDone = true;
         status = doneStatus;
-        break;
     }
     _lastStatus = status;
     _listening = status == listeningStatus;
@@ -713,11 +718,11 @@ class SpeechToTextNotInitializedException implements Exception {}
 /// Thrown when listen fails to properly start a speech listening session
 /// on the device.
 class ListenFailedException implements Exception {
+  ListenFailedException(this.message, [this.details, this.stackTrace]);
+
   final String? message;
   final String? details;
   final String? stackTrace;
-
-  ListenFailedException(this.message, [this.details, this.stackTrace]);
 }
 
 class ListenNotStartedException implements Exception {}

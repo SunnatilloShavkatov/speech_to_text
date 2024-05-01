@@ -1,13 +1,14 @@
-import 'package:flutter/services.dart';
-import 'package:speech_to_text/speech_recognition_error.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
-import 'package:speech_to_text_platform_interface/speech_to_text_platform_interface.dart';
+// ignore_for_file: type_annotate_public_apis,always_specify_types
+import "package:flutter/services.dart";
+import "package:speech_to_text/speech_recognition_error.dart";
+import "package:speech_to_text/speech_recognition_result.dart";
+import "package:speech_to_text/speech_to_text.dart";
+import "package:speech_to_text_platform_interface/speech_to_text_platform_interface.dart";
 
 class TestSpeechToTextPlatform extends SpeechToTextPlatform {
-  static const String listenExceptionCode = 'listenFailedError';
-  static const String listenExceptionMessage = 'Failed';
-  static const String listenExceptionDetails = 'Device Listen Failure';
+  static const String listenExceptionCode = "listenFailedError";
+  static const String listenExceptionMessage = "Failed";
+  static const String listenExceptionDetails = "Device Listen Failure";
 
   bool initResult = true;
   bool initInvoked = false;
@@ -19,15 +20,15 @@ class TestSpeechToTextPlatform extends SpeechToTextPlatform {
   bool listenException = false;
   String listeningStatusResponse = SpeechToText.listeningStatus;
   String? listenLocale;
-  List<String> localesResult = [];
-  static const String localeId1 = 'en_US';
-  static const String localeId2 = 'fr_CA';
-  static const String name1 = 'English US';
-  static const String name2 = 'French Canada';
-  static const String locale1 = '$localeId1:$name1';
-  static const String locale2 = '$localeId2:$name2';
-  static const String firstRecognizedWords = 'hello';
-  static const String secondRecognizedWords = 'hello there';
+  List<String> localesResult = <String>[];
+  static const String localeId1 = "en_US";
+  static const String localeId2 = "fr_CA";
+  static const String name1 = "English US";
+  static const String name2 = "French Canada";
+  static const String locale1 = "$localeId1:$name1";
+  static const String locale2 = "$localeId2:$name2";
+  static const String firstRecognizedWords = "hello";
+  static const String secondRecognizedWords = "hello there";
   static const double firstConfidence = 0.85;
   static const double secondConfidence = 0.62;
   static const String firstRecognizedJson =
@@ -40,29 +41,38 @@ class TestSpeechToTextPlatform extends SpeechToTextPlatform {
       SpeechRecognitionWords(firstRecognizedWords, firstConfidence);
   static const SpeechRecognitionWords secondWords =
       SpeechRecognitionWords(secondRecognizedWords, secondConfidence);
-  static final SpeechRecognitionResult firstRecognizedResult =
-      SpeechRecognitionResult([firstWords], false);
-  static final SpeechRecognitionResult secondRecognizedResult =
-      SpeechRecognitionResult([secondWords], false);
-  static final SpeechRecognitionResult finalRecognizedResult =
-      SpeechRecognitionResult([secondWords], true);
+  static const SpeechRecognitionResult firstRecognizedResult =
+      SpeechRecognitionResult(
+    <SpeechRecognitionWords>[firstWords],
+    false,
+  );
+  static const SpeechRecognitionResult secondRecognizedResult =
+      SpeechRecognitionResult(
+    <SpeechRecognitionWords>[secondWords],
+    false,
+  );
+  static const SpeechRecognitionResult finalRecognizedResult =
+      SpeechRecognitionResult(
+    <SpeechRecognitionWords>[secondWords],
+    true,
+  );
   static const String transientErrorJson =
       '{"errorMsg":"network","permanent":false}';
   static const String permanentErrorJson =
       '{"errorMsg":"network","permanent":true}';
-  static final SpeechRecognitionError firstError =
-      SpeechRecognitionError('network', true);
+  static const SpeechRecognitionError firstError =
+      SpeechRecognitionError("network", true);
   static const double level1 = 0.5;
   static const double level2 = 10;
 
   @override
-  Future<bool> hasPermission() async {
-    return hasPermissionResult;
-  }
+  Future<bool> hasPermission() async => hasPermissionResult;
 
   @override
-  Future<bool> initialize(
-      {debugLogging = false, List<SpeechConfigOption>? options}) async {
+  Future<bool> initialize({
+    debugLogging = false,
+    List<SpeechConfigOption>? options,
+  }) async {
     initInvoked = true;
     return initResult;
   }
@@ -78,20 +88,22 @@ class TestSpeechToTextPlatform extends SpeechToTextPlatform {
   }
 
   @override
-  Future<bool> listen(
-      {String? localeId,
-      partialResults = true,
-      onDevice = false,
-      int listenMode = 0,
-      sampleRate = 0,
-      SpeechListenOptions? options}) async {
+  Future<bool> listen({
+    String? localeId,
+    partialResults = true,
+    onDevice = false,
+    int listenMode = 0,
+    sampleRate = 0,
+    SpeechListenOptions? options,
+  }) async {
     listenInvoked = true;
     listenLocale = localeId;
     if (listenException) {
       throw PlatformException(
-          code: listenExceptionCode,
-          message: listenExceptionMessage,
-          details: listenExceptionDetails);
+        code: listenExceptionCode,
+        message: listenExceptionMessage,
+        details: listenExceptionDetails,
+      );
     }
     return true;
   }
@@ -127,8 +139,9 @@ class TestSpeechToTextPlatform extends SpeechToTextPlatform {
   }
 
   void setupLocales() {
-    localesResult.clear();
-    localesResult.add(locale1);
-    localesResult.add(locale2);
+    localesResult
+      ..clear()
+      ..add(locale1)
+      ..add(locale2);
   }
 }

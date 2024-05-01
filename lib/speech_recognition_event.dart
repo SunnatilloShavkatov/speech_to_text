@@ -1,5 +1,5 @@
-import 'package:speech_to_text/speech_recognition_error.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
+import "package:speech_to_text/speech_recognition_error.dart";
+import "package:speech_to_text/speech_recognition_result.dart";
 
 enum SpeechRecognitionEventType {
   /// The final transcription of speech for a recognition session. This is
@@ -34,14 +34,14 @@ enum SpeechRecognitionEventType {
 /// Use [eventType] to determine what type of event it is and depending on that
 /// use the other properties to get information about it.
 class SpeechRecognitionEvent {
+
+  SpeechRecognitionEvent(
+      this.eventType, this._result, this._error, this._listening, this._level,);
   final SpeechRecognitionEventType eventType;
   final SpeechRecognitionError? _error;
   final SpeechRecognitionResult? _result;
   final bool? _listening;
   final double? _level;
-
-  SpeechRecognitionEvent(
-      this.eventType, this._result, this._error, this._listening, this._level);
 
   /// true when there is still an active listening session, false when the
   /// listening session has ended.

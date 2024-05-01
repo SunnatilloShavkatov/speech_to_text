@@ -1,10 +1,12 @@
-import 'dart:async';
+// ignore_for_file: discarded_futures
 
-import 'package:flutter/material.dart';
-import 'package:speech_to_text/speech_recognition_error.dart';
-import 'package:speech_to_text/speech_recognition_event.dart';
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
+import "dart:async";
+
+import "package:flutter/material.dart";
+import "package:speech_to_text/speech_recognition_error.dart";
+import "package:speech_to_text/speech_recognition_event.dart";
+import "package:speech_to_text/speech_recognition_result.dart";
+import "package:speech_to_text/speech_to_text.dart";
 
 /// Simplifies interaction with [SpeechToText] by handling all the callbacks and notifying
 /// listeners as events happen.
@@ -23,19 +25,19 @@ import 'package:speech_to_text/speech_to_text.dart';
 ///   var words = speechProvider.lastWords;
 /// });
 class SpeechToTextProvider extends ChangeNotifier {
-  final StreamController<SpeechRecognitionEvent> _recognitionController =
-      StreamController.broadcast();
-  final SpeechToText _speechToText;
-  SpeechRecognitionResult? _lastResult;
-  double _lastLevel = 0;
-  List<LocaleName> _locales = [];
-  LocaleName? _systemLocale;
-
   /// Only construct one instance in an application.
   ///
   /// Do not call `initialize` on the [SpeechToText] that is passed as a parameter, instead
   /// call the [initialize] method on this class.
   SpeechToTextProvider(this._speechToText);
+
+  final StreamController<SpeechRecognitionEvent> _recognitionController =
+      StreamController<SpeechRecognitionEvent>.broadcast();
+  final SpeechToText _speechToText;
+  SpeechRecognitionResult? _lastResult;
+  double _lastLevel = 0;
+  List<LocaleName> _locales = <LocaleName>[];
+  LocaleName? _systemLocale;
 
   Stream<SpeechRecognitionEvent> get stream => _recognitionController.stream;
 
@@ -55,22 +57,24 @@ class SpeechToTextProvider extends ChangeNotifier {
   ///
   /// Returns true if [SpeechToText] was initialized successful and can now
   /// be used, false otherwise.
-  Future<bool> initialize(
-      {debugLogging = false,
-      Duration finalTimeout = SpeechToText.defaultFinalTimeout,
-      List<SpeechConfigOption>? options}) async {
+  Future<bool> initialize({
+    bool debugLogging = false,
+    Duration finalTimeout = SpeechToText.defaultFinalTimeout,
+    List<SpeechConfigOption>? options,
+  }) async {
     if (isAvailable) {
       return isAvailable;
     }
-    var availableBefore = _speechToText.isAvailable;
-    var available = await _speechToText.initialize(
-        onStatus: _onStatus,
-        onError: _onError,
-        debugLogging: debugLogging,
-        finalTimeout: finalTimeout,
-        options: options);
+    final bool availableBefore = _speechToText.isAvailable;
+    final bool available = await _speechToText.initialize(
+      onStatus: _onStatus,
+      onError: _onError,
+      debugLogging: debugLogging,
+      finalTimeout: finalTimeout,
+      options: options,
+    );
     if (available) {
-      _locales = [];
+      _locales = <LocaleName>[];
       _locales.addAll(await _speechToText.locales());
       _systemLocale = await _speechToText.systemLocale();
     }
@@ -129,37 +133,32 @@ class SpeechToTextProvider extends ChangeNotifier {
   /// supported languages for listening.
   ///
   /// Call this only after a successful [initialize] call
-  void listen(
-      {bool partialResults = true,
-      onDevice = false,
-      bool soundLevel = false,
-      Duration? listenFor,
-      Duration? pauseFor,
-      String? localeId,
-      ListenMode listenMode = ListenMode.confirmation}) {
+  void listen({
+    bool soundLevel = false,
+    Duration? listenFor,
+    Duration? pauseFor,
+    String? localeId,
+    ListenMode listenMode = ListenMode.confirmation,
+  }) {
     _lastLevel = 0;
     _lastResult = null;
     if (soundLevel) {
       _speechToText.listen(
-          partialResults: partialResults,
-          onDevice: onDevice,
-          listenFor: listenFor,
-          pauseFor: pauseFor,
-          cancelOnError: true,
-          onResult: _onListenResult,
-          onSoundLevelChange: _onSoundLevelChange,
-          localeId: localeId,
-          listenMode: listenMode);
+        listenFor: listenFor,
+        pauseFor: pauseFor,
+        onResult: _onListenResult,
+        onSoundLevelChange: _onSoundLevelChange,
+        localeId: localeId,
+        listenMode: listenMode,
+      );
     } else {
       _speechToText.listen(
-          partialResults: partialResults,
-          onDevice: onDevice,
-          listenFor: listenFor,
-          pauseFor: pauseFor,
-          cancelOnError: true,
-          onResult: _onListenResult,
-          localeId: localeId,
-          listenMode: listenMode);
+        listenFor: listenFor,
+        pauseFor: pauseFor,
+        onResult: _onListenResult,
+        localeId: localeId,
+        listenMode: listenMode,
+      );
     }
   }
 
@@ -182,51 +181,70 @@ class SpeechToTextProvider extends ChangeNotifier {
   }
 
   void _onError(SpeechRecognitionError errorNotification) {
-    _recognitionController.add(SpeechRecognitionEvent(
+    _recognitionController.add(
+      SpeechRecognitionEvent(
         SpeechRecognitionEventType.errorEvent,
         null,
         errorNotification,
         isListening,
-        null));
+        null,
+      ),
+    );
     notifyListeners();
   }
 
   void _onStatus(String status) {
     if (status == SpeechToText.doneStatus) {
-      _recognitionController.add(SpeechRecognitionEvent(
-          SpeechRecognitionEventType.doneEvent, null, null, isListening, null));
+      _recognitionController.add(
+        SpeechRecognitionEvent(
+          SpeechRecognitionEventType.doneEvent,
+          null,
+          null,
+          isListening,
+          null,
+        ),
+      );
     } else {
-      _recognitionController.add(SpeechRecognitionEvent(
+      _recognitionController.add(
+        SpeechRecognitionEvent(
           SpeechRecognitionEventType.statusChangeEvent,
           null,
           null,
           isListening,
-          null));
+          null,
+        ),
+      );
     }
     notifyListeners();
   }
 
   void _onListenResult(SpeechRecognitionResult result) {
     _lastResult = result;
-    _recognitionController.add(SpeechRecognitionEvent(
+    _recognitionController.add(
+      SpeechRecognitionEvent(
         result.finalResult
             ? SpeechRecognitionEventType.finalRecognitionEvent
             : SpeechRecognitionEventType.partialRecognitionEvent,
         result,
         null,
         isListening,
-        null));
+        null,
+      ),
+    );
     notifyListeners();
   }
 
   void _onSoundLevelChange(double level) {
     _lastLevel = level;
-    _recognitionController.add(SpeechRecognitionEvent(
+    _recognitionController.add(
+      SpeechRecognitionEvent(
         SpeechRecognitionEventType.soundLevelChangeEvent,
         null,
         null,
         null,
-        level));
+        level,
+      ),
+    );
     notifyListeners();
   }
 }

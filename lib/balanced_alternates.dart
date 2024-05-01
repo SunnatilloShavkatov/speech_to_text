@@ -1,17 +1,22 @@
-import 'dart:math';
+import "dart:math";
 
-import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text_platform_interface/speech_to_text_platform_interface.dart';
+import "package:speech_to_text/speech_recognition_result.dart";
+import "package:speech_to_text_platform_interface/speech_to_text_platform_interface.dart";
 
 class BalancedAlternates {
-  final Map<int, List<SpeechRecognitionWords>> _alternates = {};
+  final Map<int, List<SpeechRecognitionWords>> _alternates =
+      <int, List<SpeechRecognitionWords>>{};
 
   static bool isAggregateResultsEnabled(List<SpeechConfigOption>? options) {
-    if (null == options) return true;
-    final any = options.any((option) =>
-        option.platform == 'web' &&
-        option.name == 'aggregate' &&
-        option.value == false);
+    if (null == options) {
+      return true;
+    }
+    final bool any = options.any(
+      (SpeechConfigOption option) =>
+          option.platform == "web" &&
+          option.name == "aggregate" &&
+          option.value == false,
+    );
     return !any;
   }
 
@@ -23,7 +28,7 @@ class BalancedAlternates {
   /// contain the most phrases. If a phrase is added to an alternate that
   ///
   void add(int phrase, String words, double confidence) {
-    _alternates[phrase] ??= [];
+    _alternates[phrase] ??= <SpeechRecognitionWords>[];
     _alternates[phrase]?.add(SpeechRecognitionWords(words, confidence));
   }
 
@@ -37,41 +42,50 @@ class BalancedAlternates {
   /// previous alternate. This is done so that the result is a complete
   /// transcript of all the alternates.
   List<SpeechRecognitionWords> getAlternates(bool aggregateResults) {
-    final phraseCount = _alternates.length;
-    var result = <SpeechRecognitionWords>[];
-    final maxAlternates = _alternates.values
-        .fold(0, (max, list) => max = list.length > max ? list.length : max);
+    final int phraseCount = _alternates.length;
+    final List<SpeechRecognitionWords> result = <SpeechRecognitionWords>[];
+    final int maxAlternates = _alternates.values.fold(
+        0,
+        (int max, List<SpeechRecognitionWords> list) =>
+            max = list.length > max ? list.length : max,);
     // print(
     //     'Speech recognition alternates: $maxAlternates, phrases: $phraseCount');
 
     if (aggregateResults) {
-      for (var phraseIndex = 0; phraseIndex < phraseCount; ++phraseIndex) {
-        final phraseAlternates = _alternates[phraseIndex] ?? [];
-        for (var altIndex = max(1, phraseAlternates.length);
+      for (int phraseIndex = 0; phraseIndex < phraseCount; ++phraseIndex) {
+        final List<SpeechRecognitionWords> phraseAlternates =
+            _alternates[phraseIndex] ?? <SpeechRecognitionWords>[];
+        for (int altIndex = max(1, phraseAlternates.length);
             altIndex < maxAlternates;
             ++altIndex) {
           phraseAlternates.add(phraseAlternates[altIndex - 1]);
         }
       }
-      for (var altCount = 0; altCount < maxAlternates; ++altCount) {
-        var alternatePhrase = '';
-        var alternateConfidence = 1.0;
-        for (var phraseIndex = 0; phraseIndex < phraseCount; ++phraseIndex) {
-          alternatePhrase +=
-              _alternates[phraseIndex]![altCount].recognizedWords;
-          alternateConfidence = min(alternateConfidence,
-              _alternates[phraseIndex]![altCount].confidence);
+      for (int altCount = 0; altCount < maxAlternates; ++altCount) {
+        final StringBuffer alternatePhrase = StringBuffer();
+        double alternateConfidence = 1;
+        for (int phraseIndex = 0; phraseIndex < phraseCount; ++phraseIndex) {
+          alternatePhrase
+              .write(_alternates[phraseIndex]![altCount].recognizedWords);
+          alternateConfidence = min(
+            alternateConfidence,
+            _alternates[phraseIndex]![altCount].confidence,
+          );
         }
-        result
-            .add(SpeechRecognitionWords(alternatePhrase, alternateConfidence));
+        result.add(
+          SpeechRecognitionWords(
+            alternatePhrase.toString(),
+            alternateConfidence,
+          ),
+        );
       }
     } else {
-      for (var phraseIndex = phraseCount - 1; phraseIndex >= 0; --phraseIndex) {
-        if ((_alternates[phraseIndex]?[0].recognizedWords.trim() ?? '')
+      for (int phraseIndex = phraseCount - 1; phraseIndex >= 0; --phraseIndex) {
+        if ((_alternates[phraseIndex]?[0].recognizedWords.trim() ?? "")
             .isEmpty) {
           continue;
         }
-        for (var altIndex = 0;
+        for (int altIndex = 0;
             altIndex < _alternates[phraseIndex]!.length;
             ++altIndex) {
           result.add(_alternates[phraseIndex]![altIndex]);
