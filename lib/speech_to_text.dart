@@ -301,7 +301,7 @@ class SpeechToText {
     SpeechToTextPlatform.instance.onError = _onNotifyError;
     SpeechToTextPlatform.instance.onStatus = _onNotifyStatus;
     SpeechToTextPlatform.instance.onSoundLevel = _onSoundLevelChange;
-    return SpeechToTextPlatform.instance.initialize(
+    return _initWorked = await SpeechToTextPlatform.instance.initialize(
       debugLogging: debugLogging,
       options: options,
     );

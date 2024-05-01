@@ -114,12 +114,12 @@ class SpeechProviderExampleWidgetState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
-                DropdownButton(
+                DropdownButton<String>(
                   onChanged: _switchLang,
                   value: _currentLocaleId,
                   items: speechProvider.locales
                       .map(
-                        (LocaleName localeName) => DropdownMenuItem(
+                        (LocaleName localeName) => DropdownMenuItem<String>(
                           value: localeName.localeId,
                           child: Text(localeName.name),
                         ),
