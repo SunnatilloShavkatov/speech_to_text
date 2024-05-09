@@ -11,6 +11,7 @@ dependencies:
   clock: ^1.1.1
   flutter:
     sdk: flutter
+  speech_to_text_macos: ^1.1.0
   speech_to_text_platform_interface: ^2.2.0
 
 dev_dependencies:
@@ -30,3 +31,5 @@ flutter:
         pluginClass: SpeechToTextPlugin
       ios:
         pluginClass: SpeechToTextPlugin
+      macos:
+        default_package: speech_to_text_macos
